@@ -9,7 +9,11 @@ def test_root_endpoint():
     """Test the root endpoint returns correct response."""
     response = client.get("/")
     assert response.status_code == 200
-    assert response.json() == {"message": "MemVoice API is running"}
+    response_data = response.json()
+    assert response_data["message"] == "MemVoice API is running"
+    assert "version" in response_data
+    assert "docs_url" in response_data
+    assert "environment" in response_data
 
 
 def test_health_endpoint():
