@@ -11,6 +11,7 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
+from src.api.deps import get_db
 from src.core.database import Base, get_session
 from src.main import app
 
@@ -56,11 +57,11 @@ def client() -> TestClient:
 async def async_client(test_db: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
     """Create an async test client with test database."""
 
-    # Override the get_session dependency
-    async def override_get_session():
+    # Override the get_db dependency (which calls get_session internally)
+    async def override_get_db():
         yield test_db
 
-    app.dependency_overrides[get_session] = override_get_session
+    app.dependency_overrides[get_db] = override_get_db
 
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
