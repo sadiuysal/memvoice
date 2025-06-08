@@ -1,0 +1,64 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Frontend Development Patterns
+
+## Next.js 14 Standards
+- Use App Router with TypeScript for all new pages
+- Implement Server Components by default, use Client Components only when needed
+- Use proper data fetching with SWR for client-side data
+- Implement proper error boundaries and loading states
+- Follow Next.js performance best practices
+
+## Component Architecture
+- Use functional components with React hooks
+- Prefer named exports over default exports
+- Keep components small and focused (< 200 lines)
+- Use TypeScript interfaces for all props
+- Implement proper prop validation
+
+Example component structure:
+```typescript
+interface VoiceRecorderProps {
+  onRecordingComplete: (audioBlob: Blob) => void;
+  isRecording: boolean;
+  onError?: (error: Error) => void;
+}
+
+export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
+  onRecordingComplete,
+  isRecording,
+  onError
+}) => {
+  // Implementation with proper error handling
+};
+```
+
+## Voice Interface Patterns
+- Use MediaRecorder API for audio capture
+- Implement proper audio permissions handling
+- Add visual feedback for recording state
+- Handle browser compatibility issues
+- Implement audio playback with proper controls
+
+## Real-time Communication
+- Use WebSocket connections for voice streaming
+- Implement proper connection state management
+- Add reconnection logic for network issues
+- Handle message queuing during disconnection
+- Use React hooks for WebSocket state management
+
+## Styling Guidelines
+- Use Tailwind CSS utility classes
+- Follow mobile-first responsive design
+- Implement consistent spacing using Tailwind scale
+- Use CSS Grid and Flexbox for layouts
+- Maintain accessibility standards (WCAG 2.1)
+
+## Code Quality
+- Run ESLint: `npm run lint`
+- Format with Prettier: `npm run format`
+- Type checking: `npm run type-check`
+- Maintain > 80% test coverage with Jest and React Testing Library

@@ -1,0 +1,98 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# GitHub Workflow Patterns
+
+## Issue Management
+Follow structured issue creation with proper templates:
+- **Epic Issues**: `[EPIC] Phase X: Feature Name` with comprehensive scope
+- **Task Issues**: `[TASK] Specific Implementation Task` with acceptance criteria
+- **Bug Reports**: `[BUG] Clear bug description` with reproduction steps
+- Use proper labels: `type/epic`, `priority/critical`, `component/area`
+
+## Branching Strategy
+Use Git flow-based branching:
+- **`main`**: Production-ready code only
+- **`develop`**: Integration branch for features
+- **`feature/*`**: Individual feature development
+- **`bugfix/*`**: Bug fix branches
+- **`hotfix/*`**: Production hotfixes
+
+Branch naming convention:
+```bash
+feature/issue-7-memory-framework
+bugfix/issue-23-voice-latency  
+hotfix/critical-api-error
+```
+
+## Commit Message Standards
+Follow Conventional Commits specification:
+```
+<type>[optional scope]: <description>
+
+feat(memory): add Zep integration with token optimization
+fix(voice): resolve audio streaming latency issue
+docs(api): update authentication documentation
+test(frontend): add voice interface unit tests
+```
+
+## Pull Request Process
+Comprehensive PR requirements:
+1. **Link Related Issues**: Reference GitHub issue numbers
+2. **Descriptive Title**: Clear summary of changes
+3. **Detailed Description**: Use provided PR template
+4. **Testing Evidence**: Include test results and coverage
+5. **Screenshots**: For UI changes
+6. **Reviewer Assignment**: At least one code review required
+
+PR checklist requirements:
+- [ ] All tests pass (unit, integration, E2E)
+- [ ] Code coverage > 80%
+- [ ] No security vulnerabilities
+- [ ] Performance benchmarks met
+- [ ] Documentation updated
+- [ ] API documentation updated (if applicable)
+
+## Code Review Standards
+Review focus areas:
+- **Architecture Alignment**: Follows MemVoice patterns
+- **Performance**: Meets latency and efficiency targets
+- **Security**: No vulnerabilities or data leaks
+- **Testing**: Adequate test coverage and quality
+- **Documentation**: Clear comments and docs
+
+## Project Board Management
+Use GitHub Projects for tracking:
+- **MVP Development Board**: Main development workflow
+- **Backlog Management**: Issue prioritization
+- **Bug Tracking**: Separate board for bug lifecycle
+- **Sprint Planning**: Weekly sprint management
+
+## Automation Workflows
+Implement CI/CD automation:
+- **Quality Gates**: Automated testing, linting, security scanning
+- **Deployment**: Automatic staging deployment on PR merge
+- **Issue Management**: Auto-labeling and project board updates
+- **Documentation**: Auto-generate API docs from code
+
+## Linear Integration
+Cross-platform issue management:
+- Create corresponding Linear issues for GitHub issues
+- Cross-reference issue numbers between platforms
+- Use Linear for project management, GitHub for technical implementation
+- Sync status updates between both tools
+
+## Release Management
+Follow semantic versioning:
+- **MAJOR**: Breaking API changes
+- **MINOR**: Backwards-compatible features
+- **PATCH**: Bug fixes and minor improvements
+
+Release process:
+1. Create release branch from develop
+2. Update version numbers and changelog
+3. Comprehensive testing on staging
+4. Merge to main with proper tagging
+5. Deploy to production with monitoring

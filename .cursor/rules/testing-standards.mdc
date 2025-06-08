@@ -1,0 +1,88 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Testing Standards
+
+## Testing Strategy
+Follow testing pyramid approach:
+- **Unit Tests (70%)**: Individual functions and components
+- **Integration Tests (20%)**: Component interactions and API endpoints
+- **End-to-End Tests (10%)**: Complete user workflows
+
+## Backend Testing (pytest)
+- Use pytest with fixtures for database setup
+- Mock external API calls (OpenAI, ElevenLabs, Pinecone)
+- Test all error conditions and edge cases
+- Include performance benchmarks for critical paths
+- Test memory optimization effectiveness
+
+Example test structure:
+```python
+import pytest
+from src.services.memory import MemoryService
+
+class TestMemoryService:
+    def test_token_optimization_reduces_usage(self):
+        # Arrange
+        service = MemoryService()
+        long_context = "..." * 1000
+        
+        # Act
+        optimized = service.optimize_context(long_context)
+        
+        # Assert
+        assert len(optimized) < len(long_context) * 0.3  # 70% reduction
+        assert service.validate_context_integrity(optimized)
+```
+
+## Frontend Testing (Jest + RTL)
+- Use React Testing Library for component testing
+- Test user interactions and accessibility
+- Mock API calls and WebSocket connections
+- Test voice interface functionality
+- Include visual regression tests for critical components
+
+Example component test:
+```typescript
+import { render, screen, fireEvent } from '@testing-library/react';
+import { VoiceInterface } from '@/components/VoiceInterface';
+
+describe('VoiceInterface', () => {
+  it('should handle recording state correctly', async () => {
+    render(<VoiceInterface />);
+    
+    const recordButton = screen.getByRole('button', { name: /record/i });
+    fireEvent.click(recordButton);
+    
+    expect(screen.getByText(/recording/i)).toBeInTheDocument();
+  });
+});
+```
+
+## Integration Testing
+- Test complete voice processing pipeline
+- Verify memory management across requests
+- Test WebSocket real-time communication
+- Validate API error handling and recovery
+- Test content processing workflow
+
+## E2E Testing (Playwright)
+- Test complete user workflows
+- Verify voice recording and playback
+- Test cross-browser compatibility
+- Include mobile device testing
+- Test performance under load
+
+## Coverage Requirements
+- **Minimum**: 80% for all new code
+- **Critical Components**: 90%+ (memory, voice processing, API endpoints)
+- **Integration Tests**: Must cover all API endpoints
+- **E2E Tests**: Must cover all major user workflows
+
+## Performance Testing
+- Voice processing latency < 2 seconds
+- Memory optimization effectiveness (70% token reduction)
+- API response times < 500ms (95th percentile)
+- WebSocket connection stability and reconnection
