@@ -51,6 +51,13 @@ class Settings(BaseSettings):
     MAX_AUDIO_FILE_SIZE: int = 25 * 1024 * 1024  # 25MB
     SUPPORTED_AUDIO_FORMATS: list = ["mp3", "wav", "flac", "m4a"]
 
+    # Zep Configuration
+    ZEP_API_URL: str = "http://localhost:8000"  # Default Zep server URL
+    ZEP_COLLECTION_PREFIX: str = "memvoice_"
+    ZEP_EMBEDDING_MODEL: str = "all-MiniLM-L6-v2"  # Default embedding model
+    ZEP_MAX_TOKENS: int = 4096  # Maximum tokens per memory entry
+    ZEP_TOKEN_REDUCTION_TARGET: float = 0.7  # Target 70% token reduction
+
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
     @classmethod
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> List[str]:
