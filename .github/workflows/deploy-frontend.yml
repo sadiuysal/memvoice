@@ -1,0 +1,92 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/deploy-frontend.yml'
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node.js ${{ env.NODE_VERSION }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+        
+    - name: Install dependencies
+      run: |
+        cd frontend
+        npm ci
+        
+    - name: Run tests
+      run: |
+        cd frontend
+        npm run test
+        
+    - name: Build application
+      run: |
+        cd frontend
+        npm run build
+      env:
+        NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+        NEXT_PUBLIC_SENTRY_DSN: ${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}
+        
+    - name: Deploy to Vercel
+      uses: vercel/action@v1
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        working-directory: frontend
+        vercel-args: '--prod'
+        
+    - name: Update deployment status
+      if: success()
+      run: |
+        echo "Frontend deployed successfully to production"
+        echo "URL: ${{ env.VERCEL_URL }}"
+        
+    - name: Notify deployment failure
+      if: failure()
+      run: |
+        echo "Frontend deployment failed"
+        exit 1
+
+  # Health check after deployment
+  health-check:
+    runs-on: ubuntu-latest
+    needs: deploy-frontend
+    
+    steps:
+    - name: Wait for deployment
+      run: sleep 30
+      
+    - name: Health check
+      run: |
+        curl -f ${{ secrets.NEXT_PUBLIC_API_URL }}/health || exit 1
+        echo "Health check passed"
+        
+    - name: Performance check
+      run: |
+        # Basic performance check with curl
+        response_time=$(curl -o /dev/null -s -w "%{time_total}" ${{ secrets.NEXT_PUBLIC_API_URL }})
+        echo "Response time: ${response_time}s"
+        
+        # Fail if response time > 5 seconds
+        if (( $(echo "$response_time > 5.0" | bc -l) )); then
+          echo "Response time too slow: ${response_time}s"
+          exit 1
+        fi 
