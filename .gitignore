@@ -6,6 +6,7 @@ __pycache__/
 # Virtual environments
 venv/
 env/
+.venv/
 
 # Distribution / packaging
 build/
@@ -14,9 +15,100 @@ dist/
 
 # OS files
 .DS_Store
+Thumbs.db
 
 # VSCode settings
 .vscode/
 
 # Exclude business documentation
-/docs/business/ 
+/docs/business/
+
+# Environment files
+.env
+.env.local
+.env.production
+.env.test
+
+# Development logs
+logs/
+*.log
+
+# Database files
+*.db
+*.sqlite3
+data/
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+.pytest_cache/
+
+# Frontend specific
+node_modules/
+.next/
+.nuxt/
+.cache/
+.parcel-cache/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+.jest/
+coverage/
+.nyc_output/
+
+# TypeScript
+*.tsbuildinfo
+
+# Docker
+.dockerignore
+
+# Secrets and security
+.secrets.baseline
+*.pem
+*.key
+
+# IDE files
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp
+
+# Python specific
+*.pyc
+*.pyo
+*.pyd
+.Python
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# celery beat schedule file
+celerybeat-schedule
+
+# SageMath parsed files
+*.sage.py
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json 
