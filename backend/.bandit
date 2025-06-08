@@ -1,0 +1,4 @@
+[bandit]
+# Bandit configuration for MemVoice backend
+exclude_dirs = tests
+skips = B101,B104 
