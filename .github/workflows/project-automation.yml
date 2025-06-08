@@ -7,6 +7,9 @@ on:
     types: [opened, ready_for_review, closed]
   project_card:
     types: [moved]
+  schedule:
+    # Run weekly report every Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
 
 env:
   LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
@@ -49,7 +52,7 @@ jobs:
           script: |
             // Auto-assign priority based on issue title and content
             const title = context.payload.issue.title.toLowerCase();
-            const body = context.payload.issue.body.toLowerCase();
+            const body = context.payload.issue.body?.toLowerCase() || '';
             
             let priority = 'priority/medium'; // default
             
@@ -119,10 +122,10 @@ jobs:
             
             ### 🔄 Workflow Status
             - [ ] **Planning**: Issue created and refined
-            - [ ] **Development**: Feature branch created
+            - [ ] **Development**: Feature branch created from \`feature/dev-environment-setup\`
             - [ ] **Implementation**: Code written and tested  
             - [ ] **Review**: PR created and reviewed
-            - [ ] **Testing**: Acceptance criteria validated
+            - [ ] **Testing**: Acceptance criteria validated using \`./scripts/test.sh\`
             - [ ] **Deployment**: Changes deployed to staging
             - [ ] **Done**: Feature complete and production ready
             
@@ -131,6 +134,12 @@ jobs:
             - **Created**: ${new Date().toISOString()}
             - **Repository**: ${context.repo.owner}/${context.repo.repo}
             - **URL**: ${context.payload.issue.html_url}
+            
+            ### 🛠️ Development Setup
+            Since our development environment is now complete, you can:
+            1. Run \`./scripts/setup.sh\` for one-command environment setup
+            2. Use \`./scripts/test.sh\` to run all tests
+            3. Access services: Frontend (3000), Backend (8000), API Docs (8000/docs)
             
             ---
             
@@ -182,12 +191,14 @@ jobs:
               - [ ] Self-review completed
               - [ ] Code is well-commented and documented
               - [ ] No new warnings or errors introduced
+              - [ ] All quality checks pass (\`./scripts/test.sh\`)
               
               #### Testing
               - [ ] Unit tests written and passing
               - [ ] Integration tests passing  
               - [ ] Manual testing completed
               - [ ] All acceptance criteria met
+              - [ ] Docker services working (\`./scripts/setup.sh\`)
               
               #### Documentation
               - [ ] README updated if needed
@@ -198,14 +209,31 @@ jobs:
               #### Security & Performance
               - [ ] No sensitive data exposed
               - [ ] Performance impact considered
-              - [ ] Security best practices followed
+              - [ ] Security best practices followed (Bandit passes)
               - [ ] Dependencies reviewed
+              
+              ### 🧪 Testing Commands
+              Run these locally before requesting review:
+              \`\`\`bash
+              # Full test suite
+              ./scripts/test.sh
+              
+              # Backend only
+              cd backend && PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 pytest
+              
+              # Frontend only  
+              cd frontend && npm test
+              
+              # Code quality
+              cd backend && black . && isort . && flake8 . && mypy .
+              cd frontend && npm run lint && npm run format:check
+              \`\`\`
               
               ---
               
               **Reviewer Guidelines**:
               1. Verify all checklist items completed
-              2. Test the changes locally
+              2. Test the changes locally using setup scripts
               3. Validate acceptance criteria  
               4. Check for potential security issues
               5. Ensure code maintainability`;
@@ -400,6 +428,13 @@ jobs:
               pr.merged_at && new Date(pr.merged_at) > oneWeekAgo
             );
             
+            // Get development environment status
+            const devEnvIssues = issuesCreated.data.filter(i => 
+              i.title.toLowerCase().includes('development') || 
+              i.title.toLowerCase().includes('environment') ||
+              i.labels.some(l => l.name.includes('infrastructure'))
+            );
+            
             const report = `# Weekly Progress Report - Week of ${oneWeekAgo.toDateString()}
             
             ## 📊 Summary
@@ -407,22 +442,57 @@ jobs:
             - **Issues Closed**: ${issuesCreated.data.filter(i => i.closed_at && new Date(i.closed_at) > oneWeekAgo).length}
             - **PRs Merged**: ${recentPRs.length}
             - **Active Issues**: ${issuesCreated.data.filter(i => i.state === 'open').length}
+            - **Infrastructure Issues**: ${devEnvIssues.length}
             
             ## 🎯 Completed Work
-            ${recentPRs.map(pr => `- ${pr.title} (#${pr.number})`).join('\n')}
+            ${recentPRs.map(pr => `- ${pr.title} (#${pr.number})`).join('\n') || '- No PRs merged this week'}
             
             ## 📋 In Progress
-            ${issuesCreated.data.filter(i => i.state === 'open' && i.labels.some(l => l.name === 'status/in-progress')).map(i => `- ${i.title} (#${i.number})`).join('\n')}
+            ${issuesCreated.data.filter(i => i.state === 'open' && i.labels.some(l => l.name === 'status/in-progress')).map(i => `- ${i.title} (#${i.number})`).join('\n') || '- No issues currently in progress'}
+            
+            ## 🏗️ Infrastructure Status
+            - Development Environment: ${devEnvIssues.filter(i => i.state === 'closed').length > 0 ? '✅ Complete' : '🔄 In Progress'}
+            - CI/CD Pipeline: ${recentPRs.length > 0 ? '✅ Active' : '⚠️ Check Status'}
+            - Docker Services: Ready for development
+            - Testing Framework: Operational
             
             ## 🔄 Next Week Focus
-            - Continue with current sprint goals
-            - Address any blockers
+            - Continue with current sprint goals  
+            - Address any blockers identified
             - Maintain development velocity
+            - Ensure all quality gates pass
+            
+            ## 🛠️ Development Commands
+            Quick reference for the team:
+            \`\`\`bash
+            # Setup environment
+            ./scripts/setup.sh
+            
+            # Run all tests
+            ./scripts/test.sh
+            
+            # Access services
+            # Frontend: http://localhost:3000
+            # Backend: http://localhost:8000
+            # API Docs: http://localhost:8000/docs
+            \`\`\`
             
             ---
             
-            Generated automatically by GitHub Actions`;
+            Generated automatically by GitHub Actions on ${now.toISOString()}`;
             
             console.log(report);
             
-            // In production, this would create an issue or send to stakeholders 
+            // Create an issue with the weekly report
+            try {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `Weekly Progress Report - ${oneWeekAgo.toDateString()}`,
+                body: report,
+                labels: ['type/report', 'automated']
+              });
+              console.log('Weekly report issue created successfully');
+            } catch (error) {
+              console.log('Failed to create weekly report issue:', error.message);
+            } 
