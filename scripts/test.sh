@@ -77,7 +77,18 @@ print_info "Checking if services are running..."
 if ! docker-compose ps | grep -q "Up"; then
     print_warning "Services not running. Starting them..."
     docker-compose up -d
-    sleep 10
+    print_info "Waiting for services to be ready..."
+    TIMEOUT=60
+    INTERVAL=5
+    ELAPSED=0
+    while ! docker-compose ps | grep -q "Up"; do
+        if [[ $ELAPSED -ge $TIMEOUT ]]; then
+            print_error "Services failed to start within $TIMEOUT seconds."
+            exit 1
+        fi
+        sleep $INTERVAL
+        ELAPSED=$((ELAPSED + INTERVAL))
+    done
 fi
 
 # Backend tests
