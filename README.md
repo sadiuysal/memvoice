@@ -21,38 +21,55 @@ A memory-optimized voice agent service that transforms websites and document set
 
 ### Local Development Setup
 
-1. **Clone the repository**
+#### 🚀 Quick Start (One Command)
+
+```bash
+# Clone the repository
+git clone https://github.com/sadiuysal/memvoice.git
+cd memvoice
+
+# One-command setup with Docker
+./scripts/setup.sh
+```
+
+This will automatically:
+- Set up environment variables from template
+- Build and start all Docker services
+- Run database migrations
+- Install dependencies
+- Start development servers with hot reload
+
+#### 📱 Access the Application
+
+After setup completes, access the services at:
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8000  
+- **API Documentation**: http://localhost:8000/docs
+- **Database**: PostgreSQL on localhost:5432
+- **Cache**: Redis on localhost:6379
+
+#### 🔧 Manual Setup (Alternative)
+
+If you prefer manual setup:
+
+1. **Environment Setup**
    ```bash
-   git clone https://github.com/username/memvoice.git
-   cd memvoice
+   cp env.template .env
+   # Edit .env with your API keys
    ```
 
-2. **Set up environment variables**
+2. **Start Services**
    ```bash
-   cp .env.example .env
-   # Edit .env with your API keys and configuration
+   # Use docker compose (v2) or docker-compose (v1)
+   docker compose up -d
+   # OR
+   docker-compose up -d
    ```
 
-3. **Backend setup**
+3. **Run Tests**
    ```bash
-   cd backend
-   python -m venv venv
-   source venv/bin/activate  # or `venv\Scripts\activate` on Windows
-   pip install -r requirements.txt
-   uvicorn src.main:app --reload
+   ./scripts/test.sh  # Run all tests
    ```
-
-4. **Frontend setup**
-   ```bash
-   cd frontend
-   npm install
-   npm run dev
-   ```
-
-5. **Access the application**
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:8000
-   - API Documentation: http://localhost:8000/docs
 
 ## 🏗️ Architecture
 
@@ -117,87 +134,105 @@ graph TB
 
 ### Project Structure
 
-The project is organized as follows:
-
 ```
 memvoice/
-├── src/                # Source code for the project
-├── tests/              # Unit and integration tests
-├── docs/               # Documentation and project plans
-├── .github/            # GitHub configuration and templates
-├── .gitignore          # Git ignore rules
-├── README.md           # Project overview and instructions
-├── CONTRIBUTING.md     # Contribution guidelines
+├── backend/            # FastAPI backend application
+│   ├── src/           # Python source code
+│   ├── tests/         # Backend tests (pytest)
+│   ├── scripts/       # Database scripts and utilities
+│   └── Dockerfile.dev # Backend development container
+├── frontend/          # Next.js frontend application
+│   ├── src/           # TypeScript/React source code
+│   ├── src/app/       # Next.js App Router pages
+│   └── Dockerfile.dev # Frontend development container
+├── scripts/           # Development automation scripts
+│   ├── setup.sh       # One-command environment setup
+│   └── test.sh        # Comprehensive test runner
+├── .github/           # GitHub Actions workflows
+├── docs/              # Project documentation
+├── docker-compose.yml # Service orchestration
+├── env.template       # Environment variables template
+└── README.md          # Project overview
 ```
 
-## Directory Descriptions
-- **src/**: All main source code for the project should go here.
-- **tests/**: All test code should go here.
-- **docs/**: Documentation, plans, and research files.
-- **.github/**: GitHub Actions, issue templates, and pull request templates.
+### Development Scripts
 
-## Getting Started
-1. Clone the repository.
-2. Install dependencies (if Python: `pip install -r requirements.txt`).
-3. Add your source code to `src/` and tests to `tests/`.
+- **`./scripts/setup.sh`** - Complete environment setup with Docker
+- **`./scripts/test.sh`** - Run all tests with coverage
+- **`docker compose up -d`** - Start all services
+- **`docker compose logs -f [service]`** - View service logs
 
-## Contributing
-See `CONTRIBUTING.md` for guidelines.
+### Contributing
+
+See [DEVELOPMENT_SETUP.md](DEVELOPMENT_SETUP.md) for detailed development setup and workflow information.
 
 ## 🧪 Testing
 
 ```bash
-# Run all tests
-npm run test:all
+# Run all tests with coverage
+./scripts/test.sh
 
 # Backend tests only
-cd backend && pytest
+cd backend && PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 pytest -p pytest_cov --cov=src
 
 # Frontend tests only
 cd frontend && npm test
 
-# E2E tests
-npm run test:e2e
+# Code quality checks
+cd backend && black . && isort . && flake8 . && mypy --config-file mypy.ini src/
+cd frontend && npm run lint && npm run format
 ```
+
+### Test Coverage
+
+The project includes comprehensive testing:
+- **Backend**: pytest with coverage reporting
+- **Frontend**: Jest with React Testing Library
+- **Code Quality**: Black, isort, flake8, mypy, ESLint, Prettier
+- **Security**: Bandit security analysis
+- **CI/CD**: Automated testing on all pull requests
 
 ## 📚 Documentation
 
-- [API Documentation](docs/api/README.md)
-- [Architecture Guide](docs/architecture/README.md)
-- [Deployment Guide](docs/deployment/README.md)
-- [User Guides](docs/user-guides/README.md)
-- [Development Plan](MEMVOICE_DEVELOPMENT_PLAN.md)
+- [Development Setup Guide](DEVELOPMENT_SETUP.md) - Complete development environment setup
+- [API Documentation](http://localhost:8000/docs) - Interactive API docs (when running locally)
+- [GitHub Project Board](https://github.com/sadiuysal/memvoice/projects) - Project management and progress tracking
+- [GitHub Issues](https://github.com/sadiuysal/memvoice/issues) - Feature requests and bug reports
 
 ## 🚀 Deployment
 
-### Production Deployment
+### Development Status
 
-The application is designed for serverless deployment:
+The development environment is complete and ready for use. Production deployment configuration is included in the CI/CD pipeline:
 
-- **Frontend**: Deployed on Vercel
-- **Backend**: Deployed on Railway
-- **Database**: Supabase PostgreSQL
-- **Vector DB**: Pinecone
+- **Frontend**: Configured for Vercel deployment
+- **Backend**: Configured for Railway deployment  
+- **Database**: PostgreSQL with Docker for development
+- **CI/CD**: GitHub Actions with automated testing and deployment
 
-See [Deployment Guide](docs/deployment/README.md) for detailed instructions.
+Current focus is on MVP development before production deployment.
 
 ### Environment Variables
 
-Required environment variables:
+Copy the template and configure your environment:
+
+```bash
+cp env.template .env
+```
+
+Key variables to configure (see `env.template` for complete list):
 
 ```env
-# API Keys
+# Development (auto-configured by setup.sh)
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/memvoice
+REDIS_URL=redis://localhost:6379
+NEXT_PUBLIC_API_URL=http://localhost:8000
+
+# Production API Keys (add when needed)
 OPENAI_API_KEY=your_openai_key
 ELEVENLABS_API_KEY=your_elevenlabs_key
 PINECONE_API_KEY=your_pinecone_key
 ZEP_API_KEY=your_zep_key
-
-# Database
-DATABASE_URL=your_database_url
-
-# App Configuration
-NEXT_PUBLIC_API_URL=http://localhost:8000
-JWT_SECRET=your_jwt_secret
 ```
 
 ## 📊 Monitoring
@@ -230,11 +265,17 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🗺️ Roadmap
 
-### Phase 1: MVP (Months 1-4)
-- [x] Core voice processing pipeline
-- [x] Memory management system
-- [x] Basic web interface
-- [ ] Beta customer onboarding
+### Phase 1: Foundation (Completed ✅)
+- [x] **Development Environment Setup** - Docker, CI/CD, testing infrastructure
+- [x] **Project Structure** - Backend (FastAPI), Frontend (Next.js), Database (PostgreSQL)
+- [x] **Code Quality Tools** - Automated formatting, linting, security scanning
+- [x] **Testing Framework** - pytest, Jest, coverage reporting
+
+### Phase 2: Core Infrastructure (In Progress 🔄)
+- [ ] **Backend API Foundation** - FastAPI endpoints, database models
+- [ ] **Memory Management System** - Zep integration, token optimization  
+- [ ] **Frontend Core** - React components, routing, state management
+- [ ] **Voice Processing Pipeline** - Whisper STT, TTS integration
 
 ### Phase 2: Enhancement (Months 5-8)
 - [ ] Multi-language support
