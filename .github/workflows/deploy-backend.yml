@@ -37,12 +37,12 @@ jobs:
         black --check .
         isort --check-only .
         flake8 .
-        mypy .
+        mypy --config-file mypy.ini src/
         
     - name: Run tests
       run: |
         cd backend
-        PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 pytest
+        PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 pytest -p pytest_cov
       env:
         TESTING: true
         DATABASE_URL: sqlite:///test.db
