@@ -1,0 +1,428 @@
+name: Project Management Automation
+
+on:
+  issues:
+    types: [opened, labeled, assigned, closed, reopened]
+  pull_request:
+    types: [opened, ready_for_review, closed]
+  project_card:
+    types: [moved]
+
+env:
+  LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  issue-automation:
+    name: Issue Management Automation
+    runs-on: ubuntu-latest
+    if: github.event_name == 'issues'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Add Issue to Project Board
+        if: github.event.action == 'opened'
+        uses: alex-page/github-project-automation-plus@v0.8.1
+        with:
+          project: MVP Development
+          column: Backlog
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Auto-assign Epic Issues
+        if: contains(github.event.issue.labels.*.name, 'type/epic')
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.addAssignees({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              assignees: ['sadiuysal']
+            });
+
+      - name: Set Priority Labels
+        if: github.event.action == 'opened'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Auto-assign priority based on issue title and content
+            const title = context.payload.issue.title.toLowerCase();
+            const body = context.payload.issue.body.toLowerCase();
+            
+            let priority = 'priority/medium'; // default
+            
+            if (title.includes('[epic]') || title.includes('critical')) {
+              priority = 'priority/critical';
+            } else if (title.includes('bug') || body.includes('urgent')) {
+              priority = 'priority/high';
+            } else if (title.includes('docs') || title.includes('documentation')) {
+              priority = 'priority/low';
+            }
+            
+            github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: [priority]
+            });
+
+      - name: Estimate Story Points
+        if: github.event.action == 'opened'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Auto-estimate story points based on issue complexity
+            const title = context.payload.issue.title.toLowerCase();
+            const body = context.payload.issue.body || '';
+            
+            let points = '3'; // default small
+            
+            if (title.includes('[epic]')) {
+              points = '21'; // extra large
+            } else if (body.includes('extra large') || body.includes('xl')) {
+              points = '21';
+            } else if (body.includes('large') || body.includes('complex')) {
+              points = '13';
+            } else if (body.includes('medium')) {
+              points = '8';
+            } else if (body.includes('small') || body.includes('simple')) {
+              points = '3';
+            }
+            
+            github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: [`effort/${points}sp`]
+            });
+
+      - name: Create Linear Issue Link Comment
+        if: github.event.action == 'opened'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const comment = `## 🔗 Linear Integration
+            
+            **Linear Project**: [MemVoice MVP Development](https://linear.app/sadis-workspace/project/memvoice-mvp-development-979a9610633e)
+            **Team ID**: \`d31dafc2-b160-4aa5-bdd5-e9a037588e9c\`
+            **Project ID**: \`b8893db8-0fe4-461f-94d7-c4d44e81f542\`
+            **Assignee**: Şadi Uysal (\`e8cb19c7-72c3-4480-858e-61b2e363d612\`)
+            
+            ### 📋 Action Items
+            - [ ] Create corresponding Linear issue with same title
+            - [ ] Copy description and acceptance criteria to Linear
+            - [ ] Link GitHub issue number in Linear description
+            - [ ] Set appropriate priority and labels in Linear
+            - [ ] Add to current Linear cycle/sprint
+            
+            ### 🔄 Workflow Status
+            - [ ] **Planning**: Issue created and refined
+            - [ ] **Development**: Feature branch created
+            - [ ] **Implementation**: Code written and tested  
+            - [ ] **Review**: PR created and reviewed
+            - [ ] **Testing**: Acceptance criteria validated
+            - [ ] **Deployment**: Changes deployed to staging
+            - [ ] **Done**: Feature complete and production ready
+            
+            ### 🏷️ Issue Metadata
+            - **Issue Number**: #${context.issue.number}
+            - **Created**: ${new Date().toISOString()}
+            - **Repository**: ${context.repo.owner}/${context.repo.repo}
+            - **URL**: ${context.payload.issue.html_url}
+            
+            ---
+            
+            **Next Steps**: 
+            1. Manually create Linear issue with this GitHub issue reference
+            2. Begin development once planning phase complete
+            3. Update status in both tools throughout development`;
+            
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: comment
+            });
+
+  pr-automation:
+    name: Pull Request Automation
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Link PR to Issues
+        if: github.event.action == 'opened'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prBody = context.payload.pull_request.body || '';
+            const prTitle = context.payload.pull_request.title;
+            
+            // Extract issue numbers from PR
+            const issueMatches = prBody.match(/#(\d+)/g) || [];
+            const closeMatches = prBody.match(/(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+#(\d+)/gi) || [];
+            
+            if (issueMatches.length > 0 || closeMatches.length > 0) {
+              const comment = `## 🔗 Linked Issues
+              
+              This PR is linked to the following issues:
+              ${issueMatches.map(match => `- ${match}`).join('\n')}
+              ${closeMatches.length > 0 ? '\n**Will close**: ' + closeMatches.join(', ') : ''}
+              
+              ### 📋 PR Checklist
+              Please ensure all items are completed before requesting review:
+              
+              #### Code Quality
+              - [ ] Code follows project style guidelines  
+              - [ ] Self-review completed
+              - [ ] Code is well-commented and documented
+              - [ ] No new warnings or errors introduced
+              
+              #### Testing
+              - [ ] Unit tests written and passing
+              - [ ] Integration tests passing  
+              - [ ] Manual testing completed
+              - [ ] All acceptance criteria met
+              
+              #### Documentation
+              - [ ] README updated if needed
+              - [ ] API documentation updated
+              - [ ] CHANGELOG updated
+              - [ ] Linear issue status updated
+              
+              #### Security & Performance
+              - [ ] No sensitive data exposed
+              - [ ] Performance impact considered
+              - [ ] Security best practices followed
+              - [ ] Dependencies reviewed
+              
+              ---
+              
+              **Reviewer Guidelines**:
+              1. Verify all checklist items completed
+              2. Test the changes locally
+              3. Validate acceptance criteria  
+              4. Check for potential security issues
+              5. Ensure code maintainability`;
+              
+              github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body: comment
+              });
+            }
+
+      - name: Auto-assign Reviewers
+        if: github.event.action == 'opened' || github.event.action == 'ready_for_review'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // For solo development, add self as reviewer for record keeping
+            try {
+              await github.rest.pulls.requestReviewers({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.payload.pull_request.number,
+                reviewers: ['sadiuysal']
+              });
+            } catch (error) {
+              console.log('Cannot assign self as reviewer:', error.message);
+            }
+
+      - name: Add PR to Project Board
+        if: github.event.action == 'opened'
+        uses: alex-page/github-project-automation-plus@v0.8.1
+        with:
+          project: MVP Development
+          column: Review
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Parse branch name for Linear issue number and post to Linear
+        if: github.event.action == 'opened'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const branch = context.payload.pull_request.head.ref;
+            const match = branch.match(/linear-(\d+)/);
+            if (match) {
+              const linearIssueNumber = match[1];
+              const prUrl = context.payload.pull_request.html_url;
+              const prTitle = context.payload.pull_request.title;
+              // Post a comment to the Linear issue (requires Linear API integration)
+              // Example: POST to Linear API with issue number and PR link
+              console.log(`Would post PR link ${prUrl} to Linear issue ${linearIssueNumber}`);
+            } else {
+              console.log('No Linear issue number found in branch name.');
+            }
+
+      - name: Update Linear issue status on PR merge
+        if: github.event.action == 'closed' && github.event.pull_request.merged == true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const branch = context.payload.pull_request.head.ref;
+            const match = branch.match(/linear-(\d+)/);
+            if (match) {
+              const linearIssueNumber = match[1];
+              // Update Linear issue status to 'In Review' or 'Done' (requires Linear API integration)
+              console.log(`Would update Linear issue ${linearIssueNumber} status to Done.`);
+            } else {
+              console.log('No Linear issue number found in branch name.');
+            }
+
+  metrics-tracking:
+    name: Project Metrics Tracking
+    runs-on: ubuntu-latest
+    if: github.event_name == 'issues' || github.event_name == 'pull_request'
+    
+    steps:
+      - name: Track Development Metrics
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const now = new Date();
+            const eventType = context.eventName;
+            const action = context.payload.action;
+            
+            // Track different metrics based on event
+            let metricData = {
+              timestamp: now.toISOString(),
+              event: eventType,
+              action: action,
+              repository: context.repo.repo,
+              user: context.actor
+            };
+            
+            if (eventType === 'issues') {
+              metricData.issue_number = context.issue.number;
+              metricData.labels = context.payload.issue.labels.map(l => l.name);
+              
+              if (action === 'opened') {
+                metricData.metric_type = 'issue_created';
+              } else if (action === 'closed') {
+                metricData.metric_type = 'issue_completed';
+                metricData.duration_days = Math.floor(
+                  (now - new Date(context.payload.issue.created_at)) / (1000 * 60 * 60 * 24)
+                );
+              }
+            } else if (eventType === 'pull_request') {
+              metricData.pr_number = context.payload.pull_request.number;
+              
+              if (action === 'opened') {
+                metricData.metric_type = 'pr_created';
+              } else if (action === 'closed' && context.payload.pull_request.merged) {
+                metricData.metric_type = 'pr_merged';
+                metricData.duration_hours = Math.floor(
+                  (now - new Date(context.payload.pull_request.created_at)) / (1000 * 60 * 60)
+                );
+              }
+            }
+            
+            console.log('Project Metric:', JSON.stringify(metricData, null, 2));
+            
+            // In a real implementation, this would be sent to analytics service
+            // For now, we log it for tracking purposes
+
+  linear-webhook-handler:
+    name: Handle Linear Webhook Events
+    runs-on: ubuntu-latest
+    if: github.event_name == 'repository_dispatch' && github.event.action == 'linear-webhook'
+    
+    steps:
+      - name: Process Linear Status Update
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const linearData = context.payload.client_payload;
+            console.log('Linear webhook data:', linearData);
+            
+            // Process Linear status changes and update GitHub accordingly
+            // This would be triggered by Linear webhooks via repository_dispatch
+            
+            if (linearData.action === 'update' && linearData.data?.state) {
+              const newStatus = linearData.data.state.name;
+              const issueId = linearData.data.identifier;
+              
+              // Map Linear status to GitHub labels
+              const statusMap = {
+                'Todo': 'status/todo',
+                'In Progress': 'status/in-progress', 
+                'In Review': 'status/review',
+                'Done': 'status/done',
+                'Canceled': 'status/canceled'
+              };
+              
+              const githubLabel = statusMap[newStatus];
+              
+              if (githubLabel && issueId) {
+                console.log(`Updating GitHub issue with Linear status: ${newStatus}`);
+                // Would update GitHub issue labels here
+              }
+            }
+
+  weekly-report:
+    name: Generate Weekly Progress Report
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    
+    steps:
+      - name: Generate Progress Report
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const oneWeekAgo = new Date();
+            oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+            
+            // Get issues created/closed in the last week
+            const issuesCreated = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'all',
+              since: oneWeekAgo.toISOString(),
+              per_page: 100
+            });
+            
+            // Get PRs merged in the last week  
+            const prsMerged = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'closed',
+              per_page: 100
+            });
+            
+            const recentPRs = prsMerged.data.filter(pr => 
+              pr.merged_at && new Date(pr.merged_at) > oneWeekAgo
+            );
+            
+            const report = `# Weekly Progress Report - Week of ${oneWeekAgo.toDateString()}
+            
+            ## 📊 Summary
+            - **Issues Created**: ${issuesCreated.data.filter(i => new Date(i.created_at) > oneWeekAgo).length}
+            - **Issues Closed**: ${issuesCreated.data.filter(i => i.closed_at && new Date(i.closed_at) > oneWeekAgo).length}
+            - **PRs Merged**: ${recentPRs.length}
+            - **Active Issues**: ${issuesCreated.data.filter(i => i.state === 'open').length}
+            
+            ## 🎯 Completed Work
+            ${recentPRs.map(pr => `- ${pr.title} (#${pr.number})`).join('\n')}
+            
+            ## 📋 In Progress
+            ${issuesCreated.data.filter(i => i.state === 'open' && i.labels.some(l => l.name === 'status/in-progress')).map(i => `- ${i.title} (#${i.number})`).join('\n')}
+            
+            ## 🔄 Next Week Focus
+            - Continue with current sprint goals
+            - Address any blockers
+            - Maintain development velocity
+            
+            ---
+            
+            Generated automatically by GitHub Actions`;
+            
+            console.log(report);
+            
+            // In production, this would create an issue or send to stakeholders 
