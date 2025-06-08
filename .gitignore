@@ -1,0 +1,22 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+
+# Virtual environments
+venv/
+env/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# OS files
+.DS_Store
+
+# VSCode settings
+.vscode/
+
+# Exclude business documentation
+/docs/business/ 

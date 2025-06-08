@@ -117,39 +117,32 @@ graph TB
 
 ### Project Structure
 
+The project is organized as follows:
+
 ```
 memvoice/
-├── backend/           # FastAPI backend service
-├── frontend/          # Next.js frontend application
-├── docs/             # Documentation
-├── scripts/          # Utility scripts
-├── docker/           # Docker configuration
-└── .github/          # GitHub workflows and templates
+├── src/                # Source code for the project
+├── tests/              # Unit and integration tests
+├── docs/               # Documentation and project plans
+├── .github/            # GitHub configuration and templates
+├── .gitignore          # Git ignore rules
+├── README.md           # Project overview and instructions
+├── CONTRIBUTING.md     # Contribution guidelines
 ```
 
-### Development Workflow
+## Directory Descriptions
+- **src/**: All main source code for the project should go here.
+- **tests/**: All test code should go here.
+- **docs/**: Documentation, plans, and research files.
+- **.github/**: GitHub Actions, issue templates, and pull request templates.
 
-1. **Create a new branch** from `develop`
-   ```bash
-   git checkout develop
-   git pull origin develop
-   git checkout -b feature/your-feature-name
-   ```
+## Getting Started
+1. Clone the repository.
+2. Install dependencies (if Python: `pip install -r requirements.txt`).
+3. Add your source code to `src/` and tests to `tests/`.
 
-2. **Make your changes** with proper testing
-3. **Run tests** before committing
-   ```bash
-   # Backend tests
-   cd backend && pytest
-   
-   # Frontend tests
-   cd frontend && npm test
-   ```
-
-4. **Create a Pull Request** to `develop`
-5. **Code review** and merge
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+## Contributing
+See `CONTRIBUTING.md` for guidelines.
 
 ## 🧪 Testing
 
