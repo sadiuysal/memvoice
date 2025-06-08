@@ -49,7 +49,7 @@ dev:
 # Run tests
 test:
 	@echo "🧪 Running tests..."
-	TESTING=true PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 pytest -p pytest_cov --cov=src --cov-report=term-missing -v
+	TESTING=true pytest --cov=src --cov-report=term-missing -v
 
 # Auto-fix formatting
 format:

@@ -106,7 +106,7 @@ fi
 echo ""
 print_status "Step 7: Running tests with pytest"
 export TESTING=true
-if PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 pytest -p pytest_cov --cov=src --cov-report=term-missing; then
+if pytest --cov=src --cov-report=term-missing; then
     print_success "All tests passed"
 else
     print_error "Tests failed"
