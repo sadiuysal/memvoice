@@ -24,12 +24,22 @@ jobs:
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
-        cache-dependency-path: frontend/package-lock.json
+        cache-dependency-path: frontend/package.json
         
     - name: Install dependencies
       run: |
         cd frontend
-        npm ci
+        npm install
+        
+    - name: Run linting
+      run: |
+        cd frontend
+        npm run lint
+        
+    - name: Fix formatting
+      run: |
+        cd frontend
+        npm run format || true
         
     - name: Run tests
       run: |
@@ -57,12 +67,16 @@ jobs:
       if: success()
       run: |
         echo "Frontend deployed successfully to production"
+        echo "Deployment SHA: ${{ github.sha }}"
+        echo "Deployed at: $(date -u)"
         echo "URL: ${{ env.VERCEL_URL }}"
         
     - name: Notify deployment failure
       if: failure()
       run: |
         echo "Frontend deployment failed"
+        echo "Failed SHA: ${{ github.sha }}"
+        echo "Failed at: $(date -u)"
         exit 1
 
   # Health check after deployment
@@ -76,17 +90,28 @@ jobs:
       
     - name: Health check
       run: |
-        curl -f ${{ secrets.NEXT_PUBLIC_API_URL }}/health || exit 1
-        echo "Health check passed"
+        curl -f ${{ secrets.FRONTEND_URL }} || exit 1
+        echo "Frontend health check passed"
         
     - name: Performance check
       run: |
         # Basic performance check with curl
-        response_time=$(curl -o /dev/null -s -w "%{time_total}" ${{ secrets.NEXT_PUBLIC_API_URL }})
+        response_time=$(curl -o /dev/null -s -w "%{time_total}" ${{ secrets.FRONTEND_URL }})
         echo "Response time: ${response_time}s"
         
         # Fail if response time > 5 seconds
         if (( $(echo "$response_time > 5.0" | bc -l) )); then
           echo "Response time too slow: ${response_time}s"
+          exit 1
+        fi
+        
+    - name: Content validation
+      run: |
+        # Check if the page contains expected content
+        response=$(curl -s ${{ secrets.FRONTEND_URL }})
+        if [[ $response == *"MemVoice"* ]]; then
+          echo "Content validation passed"
+        else
+          echo "Content validation failed - MemVoice not found in response"
           exit 1
         fi 
