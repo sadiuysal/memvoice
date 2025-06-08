@@ -1,9 +1,12 @@
-.PHONY: help install test lint format fix check ci dev clean
+.PHONY: help setup install test lint format fix check ci dev clean
 
 # Default target
 help:
 	@echo "🛠️  MemVoice Backend Development Commands"
 	@echo "========================================"
+	@echo ""
+	@echo "Setup:"
+	@echo "  make setup       Create virtual environment and install dependencies"
 	@echo ""
 	@echo "Development:"
 	@echo "  make install     Install dependencies"
@@ -14,11 +17,23 @@ help:
 	@echo "  make format      Auto-fix formatting and imports"
 	@echo "  make lint        Run linting checks only"
 	@echo "  make check       Run type checking"
+	@echo "  make quick       Quick CI status check"
 	@echo "  make ci          Run all CI checks locally"
 	@echo ""
 	@echo "Utilities:"
 	@echo "  make clean       Clean up temporary files"
 	@echo "  make help        Show this help message"
+
+# Create virtual environment and install dependencies
+setup:
+	@echo "🔧 Setting up virtual environment..."
+	python -m venv venv
+	@echo "✅ Virtual environment created!"
+	@echo ""
+	@echo "🚀 Next steps:"
+	@echo "  1. Activate virtual environment: source venv/bin/activate"
+	@echo "  2. Install dependencies: make install"
+	@echo "  3. Start developing: make dev"
 
 # Install dependencies
 install:
@@ -52,6 +67,11 @@ lint:
 check:
 	@echo "🔍 Running type checks..."
 	mypy --config-file mypy.ini src/
+
+# Quick CI status check
+quick:
+	@echo "🚀 Quick CI status check..."
+	./scripts/quick_ci.sh
 
 # Run all CI checks
 ci:

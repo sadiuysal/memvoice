@@ -40,7 +40,11 @@ fi
 
 # Check if virtual environment is activated
 if [[ -z "$VIRTUAL_ENV" ]]; then
-    print_warning "No virtual environment detected. Consider activating one."
+    print_warning "No virtual environment detected."
+    echo "💡 Tip: Create a virtual environment with:"
+    echo "   python -m venv venv && source venv/bin/activate"
+    echo "   Then run: make install"
+    echo ""
 fi
 
 echo ""

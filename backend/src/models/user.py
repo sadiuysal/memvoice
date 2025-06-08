@@ -2,7 +2,6 @@
 User model for authentication and user management.
 """
 
-from datetime import datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, Column, DateTime, Integer, String

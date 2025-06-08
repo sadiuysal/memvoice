@@ -1,0 +1,114 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Voice Processing Patterns
+
+## Audio Input Handling
+- Support multiple audio formats: WAV, MP3, WebM
+- Implement proper audio validation and conversion
+- Handle audio streaming with chunked processing
+- Add noise reduction and audio preprocessing
+- Validate audio quality before processing
+
+Example audio validation:
+```python
+class AudioValidator:
+    def validate_audio(self, audio_data: bytes, format: AudioFormat) -> bool:
+        """Validate audio quality and format."""
+        # Check file size, duration, sample rate, format
+        # Return validation result with error details
+        
+    def preprocess_audio(self, audio_data: bytes) -> bytes:
+        """Apply noise reduction and optimization."""
+        # Noise reduction, normalization, format conversion
+        # Return optimized audio data
+```
+
+## Speech-to-Text (Whisper Integration)
+- Use OpenAI Whisper API with proper error handling
+- Implement retry logic with exponential backoff
+- Add language detection and multi-language support
+- Cache transcription results for efficiency
+- Handle large audio files with chunking
+
+STT processing pattern:
+```python
+class SpeechToTextService:
+    async def transcribe_audio(self, audio_data: bytes) -> TranscriptionResult:
+        """Transcribe audio using Whisper API."""
+        try:
+            # Validate audio format and size
+            # Send to Whisper API with retries
+            # Parse and validate response
+            # Return structured result
+        except WhisperAPIError as e:
+            # Log error and implement fallback
+            raise STTProcessingError(f"Transcription failed: {e}")
+```
+
+## Text-to-Speech (ElevenLabs Integration)
+- Implement voice persona management
+- Add audio quality optimization
+- Cache generated audio for common responses
+- Handle voice synthesis errors gracefully
+- Support streaming audio generation
+
+TTS processing pattern:
+```python
+class TextToSpeechService:
+    async def synthesize_speech(self, text: str, voice_id: str) -> AudioResponse:
+        """Generate speech using ElevenLabs API."""
+        # Text preprocessing and validation
+        # Voice ID validation
+        # API call with error handling
+        # Audio quality optimization
+        # Return audio with metadata
+```
+
+## Real-time Streaming
+- Implement WebSocket-based audio streaming
+- Handle connection state management
+- Add audio buffer management for smooth playback
+- Implement latency optimization techniques
+- Monitor streaming performance metrics
+
+WebSocket audio streaming:
+```python
+class AudioStreamHandler:
+    async def handle_audio_stream(self, websocket: WebSocket):
+        """Handle real-time audio streaming."""
+        try:
+            while True:
+                # Receive audio chunk
+                # Process in real-time
+                # Send response chunk
+                # Monitor latency
+        except WebSocketDisconnect:
+            # Clean up resources
+            await self.cleanup_stream()
+```
+
+## Performance Optimization
+Target < 2 second end-to-end latency:
+- **Audio Processing**: < 200ms for preprocessing
+- **STT Processing**: < 800ms for transcription
+- **LLM Processing**: < 600ms for response generation
+- **TTS Processing**: < 400ms for synthesis
+
+## Error Handling Patterns
+Implement comprehensive error recovery:
+- Network timeout handling with retries
+- API rate limit management
+- Audio format error recovery
+- Graceful degradation for service outages
+- User-friendly error messaging
+
+## Audio Quality Metrics
+Monitor audio processing quality:
+- Input audio signal-to-noise ratio
+- Transcription accuracy rates
+- Voice synthesis quality scores
+- End-to-end latency measurements
+- User satisfaction ratings

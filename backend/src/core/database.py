@@ -3,6 +3,7 @@ Database configuration and connection management.
 """
 
 import os
+from typing import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
@@ -45,7 +46,7 @@ def get_session_factory():
     return AsyncSessionLocal
 
 
-async def get_session() -> AsyncSession:
+async def get_session() -> AsyncGenerator[AsyncSession, None]:
     """Dependency to get database session."""
     session_factory = get_session_factory()
     async with session_factory() as session:

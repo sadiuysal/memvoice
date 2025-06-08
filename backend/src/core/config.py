@@ -2,10 +2,10 @@
 Configuration management for MemVoice API.
 """
 
-from typing import Any, Dict, Optional, Union
+from typing import List, Optional, Union
 
-from pydantic import ConfigDict, Field, field_validator
-from pydantic_settings import BaseSettings
+from pydantic import Field, field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -53,15 +53,19 @@ class Settings(BaseSettings):
 
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
     @classmethod
-    def assemble_cors_origins(cls, v: Union[str, list]) -> list:
+    def assemble_cors_origins(cls, v: Union[str, List[str]]) -> List[str]:
         """Parse CORS origins from environment variable."""
         if isinstance(v, str) and not v.startswith("["):
             return [i.strip() for i in v.split(",")]
-        elif isinstance(v, (list, str)):
+        elif isinstance(v, list):
             return v
+        elif isinstance(v, str):
+            return [v]
         raise ValueError("Invalid CORS origins format")
 
-    model_config = ConfigDict(env_file=".env", case_sensitive=True, extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=".env", case_sensitive=True, extra="ignore"
+    )
 
 
 # Global settings instance

@@ -1,0 +1,49 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Backend Development Patterns
+
+## FastAPI Standards
+- Use Pydantic models for all request/response validation
+- Implement proper dependency injection for services
+- Add comprehensive error handling with custom exception classes
+- Use async/await for all I/O operations
+- Include OpenAPI documentation for all endpoints
+
+Example endpoint structure:
+```python
+@router.post("/voice/process", response_model=VoiceResponse)
+async def process_voice(
+    request: VoiceRequest,
+    memory_service: MemoryService = Depends(get_memory_service)
+) -> VoiceResponse:
+    """Process voice input with memory optimization."""
+    try:
+        # Implementation with proper error handling
+        pass
+    except VoiceProcessingError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+```
+
+## Memory Management Patterns
+- Always implement token optimization for LLM interactions
+- Use Zep framework for conversation memory management
+- Implement sliding window context for short-term memory
+- Store long-term memory in Pinecone with semantic search
+- Target 70% token reduction through compression and summarization
+
+## Voice Processing Standards
+- Handle audio streaming with proper chunking
+- Implement real-time processing with WebSocket support
+- Add audio format validation and conversion
+- Use proper error handling for external API failures (Whisper, ElevenLabs)
+- Implement caching for voice synthesis results
+
+## Code Quality
+- Use Black for code formatting: `black .`
+- Sort imports with isort: `isort .`  
+- Type checking with mypy: `mypy .`
+- Security scanning with bandit: `bandit -r .`
+- Maintain > 80% test coverage with pytest

@@ -3,7 +3,7 @@ Security utilities for authentication and authorization.
 """
 
 from datetime import datetime, timedelta
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 from jose import jwt
 from passlib.context import CryptContext
@@ -17,7 +17,7 @@ ALGORITHM = "HS256"
 
 
 def create_access_token(
-    subject: Union[str, Any], expires_delta: timedelta = None
+    subject: Union[str, Any], expires_delta: Optional[timedelta] = None
 ) -> str:
     """Create a JWT access token."""
     if expires_delta:
@@ -28,24 +28,27 @@ def create_access_token(
         )
 
     to_encode = {"exp": expire, "sub": str(subject)}
-    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt: str = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a password against its hash."""
-    return pwd_context.verify(plain_password, hashed_password)
+    result: bool = pwd_context.verify(plain_password, hashed_password)
+    return result
 
 
 def get_password_hash(password: str) -> str:
     """Generate password hash."""
-    return pwd_context.hash(password)
+    hashed: str = pwd_context.hash(password)
+    return hashed
 
 
-def verify_token(token: str) -> Union[str, None]:
+def verify_token(token: str) -> Optional[str]:
     """Verify and decode JWT token."""
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
-        return payload.get("sub")
+        sub: Optional[str] = payload.get("sub")
+        return sub
     except jwt.JWTError:
         return None

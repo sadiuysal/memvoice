@@ -22,7 +22,7 @@ async def error_handling_middleware(request: Request, call_next: Callable) -> Re
     start_time = time.time()
 
     try:
-        response = await call_next(request)
+        response: Response = await call_next(request)
 
         # Log successful requests
         process_time = time.time() - start_time

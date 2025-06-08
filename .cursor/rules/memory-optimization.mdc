@@ -1,0 +1,82 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Memory Optimization Patterns
+
+## Core Memory Architecture
+Implement three-tier memory system:
+1. **Short-term Memory**: Sliding window for immediate conversation context
+2. **Long-term Memory**: Vector-based semantic storage in Pinecone
+3. **Working Memory**: Token-optimized context for LLM processing
+
+## Token Optimization Strategies
+Target 70% token reduction through:
+- **Context Compression**: Summarize old conversation parts
+- **Semantic Chunking**: Break content into meaningful segments
+- **Relevance Filtering**: Only include contextually relevant information
+- **Progressive Summarization**: Compress older memories over time
+
+Example optimization implementation:
+```python
+class TokenOptimizer:
+    def optimize_context(self, messages: List[Message], max_tokens: int) -> str:
+        """Optimize conversation context to fit within token limits."""
+        # 1. Keep recent messages full
+        # 2. Summarize older messages
+        # 3. Use semantic search for relevant history
+        # 4. Validate final token count
+        pass
+    
+    def calculate_compression_ratio(self, original: str, compressed: str) -> float:
+        """Calculate and log compression effectiveness."""
+        return len(compressed) / len(original)
+```
+
+## Zep Integration Patterns
+- Configure Zep client with proper authentication
+- Implement sliding window memory management
+- Use Zep's built-in summarization features
+- Store metadata for memory lifecycle management
+- Implement memory cleanup and archival policies
+
+## Pinecone Vector Operations
+- Use consistent embedding models (OpenAI text-embedding)
+- Implement batch operations for efficiency
+- Add proper metadata for filtering and search
+- Use namespace separation for different users
+- Implement vector cleanup for old conversations
+
+## Memory Lifecycle Management
+```python
+class MemoryManager:
+    async def add_conversation_turn(self, user_input: str, assistant_response: str):
+        """Add new conversation turn with optimization."""
+        # 1. Store in short-term memory
+        # 2. Update vector embeddings
+        # 3. Trigger compression if needed
+        # 4. Update memory metadata
+        
+    async def retrieve_relevant_context(self, query: str, max_tokens: int) -> str:
+        """Retrieve and optimize relevant conversation context."""
+        # 1. Semantic search in vector store
+        # 2. Recent conversation from short-term memory
+        # 3. Optimize combined context for token limit
+        # 4. Return structured context string
+```
+
+## Performance Monitoring
+Track memory optimization effectiveness:
+- Token usage before/after optimization
+- Memory retrieval latency
+- Context relevance scoring
+- Compression ratio metrics
+- User satisfaction with memory quality
+
+## Memory Quality Assurance
+- Validate context integrity after compression
+- Test memory retrieval accuracy
+- Monitor for information loss
+- Implement fallback for compression failures
+- Add user feedback loop for memory quality

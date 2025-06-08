@@ -1,0 +1,37 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# MemVoice Development Standards
+
+## Project Overview
+MemVoice is a memory-optimized voice agent pipeline that transforms websites into interactive voice assistants. Focus on:
+- **Memory Optimization**: Target 70% token reduction through efficient memory management
+- **Voice Processing**: < 2 second response times for real-time interactions  
+- **Quality Standards**: > 80% test coverage, comprehensive error handling
+
+## Architecture Principles
+- **Modular Design**: Follow microservices patterns with clear separation of concerns
+- **Memory-First**: Always consider token optimization in LLM interactions
+- **Real-time Ready**: Design for streaming and real-time voice processing
+- **Scalable**: Build with horizontal scaling in mind
+
+## Technology Stack Alignment
+- **Backend**: Python 3.11+ with FastAPI, Zep memory management, Pinecone vectors
+- **Frontend**: Next.js 14 with TypeScript, Tailwind CSS, React hooks
+- **Voice**: OpenAI Whisper (STT) + ElevenLabs (TTS)
+- **Infrastructure**: Vercel + Railway deployment
+
+## Code Quality Requirements
+- Maintain > 80% test coverage for all new code
+- Follow conventional commit messages: `feat:`, `fix:`, `docs:`, etc.
+- Use type hints in Python and strict TypeScript
+- Implement comprehensive error handling and logging
+- Write clear docstrings and comments for complex logic
+
+## Performance Targets
+- Voice processing latency < 2 seconds (target: 1.5s)
+- Memory efficiency: 70% token reduction vs baseline
+- API response time < 500ms for 95th percentile
+- System uptime: 99.5% availability

@@ -1,0 +1,92 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# API Development Patterns
+
+## RESTful API Standards
+Follow REST conventions with proper HTTP methods:
+- `GET` for data retrieval
+- `POST` for resource creation
+- `PUT` for complete resource updates
+- `PATCH` for partial updates
+- `DELETE` for resource removal
+
+## Endpoint Structure
+Use consistent URL patterns:
+```
+/api/v1/voice/          # Voice processing endpoints
+/api/v1/memory/         # Memory management endpoints  
+/api/v1/content/        # Content management endpoints
+/api/v1/analytics/      # Usage analytics endpoints
+```
+
+## Request/Response Models
+Always use Pydantic models for validation:
+```python
+class VoiceProcessRequest(BaseModel):
+    audio_data: bytes
+    user_id: str
+    session_id: Optional[str] = None
+    format: AudioFormat = AudioFormat.WAV
+    
+class VoiceProcessResponse(BaseModel):
+    response_audio: bytes
+    processing_time: float
+    memory_usage: MemoryUsage
+    session_id: str
+```
+
+## Error Handling
+Implement consistent error responses:
+```python
+class APIError(Exception):
+    def __init__(self, message: str, status_code: int = 400):
+        self.message = message
+        self.status_code = status_code
+
+@app.exception_handler(APIError)
+async def api_error_handler(request: Request, exc: APIError):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"error": exc.message, "timestamp": datetime.utcnow().isoformat()}
+    )
+```
+
+## WebSocket Patterns
+For real-time voice interaction:
+- Implement proper connection lifecycle management
+- Handle message queuing during network issues
+- Add reconnection logic with exponential backoff
+- Use structured message formats with type field
+
+Example WebSocket message structure:
+```python
+class WSMessage(BaseModel):
+    type: MessageType  # audio_chunk, transcript, response, error
+    data: Dict[str, Any]
+    timestamp: datetime
+    session_id: str
+```
+
+## Authentication & Security
+- Use JWT tokens for API authentication
+- Implement rate limiting per user/endpoint
+- Add CORS configuration for frontend
+- Validate all inputs and sanitize outputs
+- Log security events and failed authentication attempts
+
+## Performance Optimization
+- Implement response caching where appropriate
+- Use async/await for all I/O operations
+- Add request/response compression
+- Monitor API response times and set alerts
+- Implement circuit breakers for external API calls
+
+## OpenAPI Documentation
+- Document all endpoints with proper descriptions
+- Include request/response examples
+- Add error response documentation
+- Use tags to organize endpoints logically
+- Include authentication requirements

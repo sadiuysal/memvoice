@@ -2,8 +2,7 @@
 Pytest configuration and fixtures for MemVoice API tests.
 """
 
-import asyncio
-from typing import AsyncGenerator, Generator
+from typing import AsyncGenerator
 
 import pytest
 import pytest_asyncio
@@ -12,7 +11,6 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
-from src.core.config import settings
 from src.core.database import Base, get_session
 from src.main import app
 
