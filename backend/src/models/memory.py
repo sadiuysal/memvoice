@@ -2,11 +2,9 @@ from datetime import datetime
 from typing import Optional
 
 from sqlalchemy import JSON, Column, DateTime, Float, ForeignKey, Integer, String
-
 from src.core.database import Base
 
 # from sqlalchemy.orm import relationship
-
 
 
 class MemoryEntry(Base):
