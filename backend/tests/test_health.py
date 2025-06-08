@@ -1,6 +1,7 @@
 """
 Tests for health check endpoints.
 """
+
 import pytest
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
@@ -18,7 +19,7 @@ async def test_basic_health_check(async_client: AsyncClient):
     """Test basic health check endpoint."""
     response = await async_client.get("/api/v1/health/health")
     assert response.status_code == 200
-    
+
     data = response.json()
     assert data["status"] == "healthy"
     assert "timestamp" in data
@@ -31,7 +32,7 @@ async def test_detailed_health_check(async_client: AsyncClient):
     """Test detailed health check endpoint."""
     response = await async_client.get("/api/v1/health/health/detailed")
     assert response.status_code == 200
-    
+
     data = response.json()
     assert data["status"] == "healthy"
     assert "timestamp" in data
@@ -52,9 +53,9 @@ def test_root_endpoint(client: TestClient):
     """Test root endpoint."""
     response = client.get("/")
     assert response.status_code == 200
-    
+
     data = response.json()
     assert data["message"] == "MemVoice API is running"
     assert "version" in data
     assert "docs_url" in data
-    assert "environment" in data 
+    assert "environment" in data

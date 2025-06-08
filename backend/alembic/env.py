@@ -1,17 +1,18 @@
 """
 Alembic environment configuration for MemVoice database migrations.
 """
+
 import asyncio
 from logging.config import fileConfig
 
-from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
+from alembic import context
+from src.core.config import settings
 # Import your models here
 from src.core.database import Base
-from src.core.config import settings
 
 # Alembic Config object
 config = context.config
@@ -71,4 +72,4 @@ def run_migrations_online() -> None:
 if context.is_offline_mode():
     run_migrations_offline()
 else:
-    run_migrations_online() 
+    run_migrations_online()

@@ -1,1 +1,1 @@
-"""Core configuration and utilities for MemVoice API.""" 
+"""Core configuration and utilities for MemVoice API."""

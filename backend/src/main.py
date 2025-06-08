@@ -1,6 +1,7 @@
 """
 MemVoice FastAPI Application
 """
+
 import logging
 from contextlib import asynccontextmanager
 
@@ -12,11 +13,9 @@ from .core.config import settings
 from .core.database import init_db
 from .core.middleware import error_handling_middleware
 
-
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -25,7 +24,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """Application lifespan events."""
     logger.info("Starting MemVoice API...")
-    
+
     # Initialize database
     try:
         await init_db()
@@ -33,9 +32,9 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error(f"Database initialization failed: {e}")
         raise
-    
+
     yield
-    
+
     logger.info("Shutting down MemVoice API...")
 
 
@@ -67,22 +66,14 @@ app.middleware("http")(error_handling_middleware)
 
 # Include routers
 app.include_router(
-    health.router,
-    prefix=f"{settings.API_V1_STR}/health",
-    tags=["health"]
+    health.router, prefix=f"{settings.API_V1_STR}/health", tags=["health"]
 )
 
 app.include_router(
-    auth.router,
-    prefix=f"{settings.API_V1_STR}/auth",
-    tags=["authentication"]
+    auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["authentication"]
 )
 
-app.include_router(
-    users.router,
-    prefix=f"{settings.API_V1_STR}/users",
-    tags=["users"]
-)
+app.include_router(users.router, prefix=f"{settings.API_V1_STR}/users", tags=["users"])
 
 
 # Root endpoint

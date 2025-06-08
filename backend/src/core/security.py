@@ -1,6 +1,7 @@
 """
 Security utilities for authentication and authorization.
 """
+
 from datetime import datetime, timedelta
 from typing import Any, Union
 
@@ -8,7 +9,6 @@ from jose import jwt
 from passlib.context import CryptContext
 
 from .config import settings
-
 
 # Password hashing context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -26,7 +26,7 @@ def create_access_token(
         expire = datetime.utcnow() + timedelta(
             minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
         )
-    
+
     to_encode = {"exp": expire, "sub": str(subject)}
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
@@ -45,9 +45,7 @@ def get_password_hash(password: str) -> str:
 def verify_token(token: str) -> Union[str, None]:
     """Verify and decode JWT token."""
     try:
-        payload = jwt.decode(
-            token, settings.SECRET_KEY, algorithms=[ALGORITHM]
-        )
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
         return payload.get("sub")
     except jwt.JWTError:
-        return None 
+        return None

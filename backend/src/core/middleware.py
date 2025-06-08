@@ -1,6 +1,7 @@
 """
 Middleware for error handling, logging, and request processing.
 """
+
 import logging
 import time
 import uuid
@@ -8,7 +9,6 @@ from typing import Callable
 
 from fastapi import HTTPException, Request, Response, status
 from fastapi.responses import JSONResponse
-
 
 logger = logging.getLogger(__name__)
 
@@ -18,12 +18,12 @@ async def error_handling_middleware(request: Request, call_next: Callable) -> Re
     # Generate request ID for tracing
     request_id = str(uuid.uuid4())
     request.state.request_id = request_id
-    
+
     start_time = time.time()
-    
+
     try:
         response = await call_next(request)
-        
+
         # Log successful requests
         process_time = time.time() - start_time
         logger.info(
@@ -33,12 +33,12 @@ async def error_handling_middleware(request: Request, call_next: Callable) -> Re
             f"Status: {response.status_code}, "
             f"Duration: {process_time:.4f}s"
         )
-        
+
         # Add request ID to response headers
         response.headers["X-Request-ID"] = request_id
-        
+
         return response
-        
+
     except HTTPException as exc:
         # Handle FastAPI HTTP exceptions
         process_time = time.time() - start_time
@@ -50,7 +50,7 @@ async def error_handling_middleware(request: Request, call_next: Callable) -> Re
             f"Detail: {exc.detail}, "
             f"Duration: {process_time:.4f}s"
         )
-        
+
         return JSONResponse(
             status_code=exc.status_code,
             content={
@@ -61,9 +61,9 @@ async def error_handling_middleware(request: Request, call_next: Callable) -> Re
                     "request_id": request_id,
                 }
             },
-            headers={"X-Request-ID": request_id}
+            headers={"X-Request-ID": request_id},
         )
-        
+
     except Exception as exc:
         # Handle unexpected exceptions
         process_time = time.time() - start_time
@@ -73,9 +73,9 @@ async def error_handling_middleware(request: Request, call_next: Callable) -> Re
             f"URL: {request.url}, "
             f"Error: {str(exc)}, "
             f"Duration: {process_time:.4f}s",
-            exc_info=True
+            exc_info=True,
         )
-        
+
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={
@@ -86,5 +86,5 @@ async def error_handling_middleware(request: Request, call_next: Callable) -> Re
                     "request_id": request_id,
                 }
             },
-            headers={"X-Request-ID": request_id}
-        ) 
+            headers={"X-Request-ID": request_id},
+        )

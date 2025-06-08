@@ -23,6 +23,9 @@ Thumbs.db
 # Exclude business documentation
 /docs/business/
 
+# Exclude wiki documentation
+docs/memvoice.wiki/
+
 # Environment files
 .env
 .env.local
