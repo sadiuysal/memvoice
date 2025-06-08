@@ -1,14 +1,16 @@
 import base64
 from datetime import datetime, timedelta
-from typing import List, Optional, Dict, Any
+from typing import Any, Dict, List, Optional
+
 import numpy as np
-from zep_python import ZepEnvironment, Memory, SearchType, SearchScope
-from sqlalchemy.orm import Session
 from sqlalchemy import and_
+from sqlalchemy.orm import Session
+from zep_python import Memory, SearchScope, SearchType, ZepEnvironment
 
 from src.core.config import settings
 from src.models.memory import MemoryEntry
-from src.schemas.memory import MemoryCreate, MemoryUpdate, MemoryQuery
+from src.schemas.memory import MemoryCreate, MemoryQuery, MemoryUpdate
+
 
 class MemoryService:
     def __init__(self, db: Session):
@@ -23,7 +25,7 @@ class MemoryService:
             content=memory.content,
             meta=memory.meta,
             relevance_score=memory.relevance_score,
-            expires_at=memory.expires_at
+            expires_at=memory.expires_at,
         )
         self.db.add(db_memory)
         self.db.commit()
@@ -36,7 +38,9 @@ class MemoryService:
     async def get_memory(self, memory_id: int) -> Optional[MemoryEntry]:
         return self.db.query(MemoryEntry).filter(MemoryEntry.id == memory_id).first()
 
-    async def update_memory(self, memory_id: int, memory: MemoryUpdate) -> Optional[MemoryEntry]:
+    async def update_memory(
+        self, memory_id: int, memory: MemoryUpdate
+    ) -> Optional[MemoryEntry]:
         db_memory = await self.get_memory(memory_id)
         if not db_memory:
             return None
@@ -65,19 +69,24 @@ class MemoryService:
         search_results = await self.zep_env.memory.search(
             collection_name=f"user_{query.user_id}",
             query=query.query,
-            limit=query.limit
+            limit=query.limit,
         )
 
         # Get memory IDs from search results
-        memory_ids = [int(result.metadata.get("memory_id")) for result in search_results]
-        
+        memory_ids = [
+            int(result.metadata.get("memory_id")) for result in search_results
+        ]
+
         # Fetch full memory entries from database
-        memories = self.db.query(MemoryEntry).filter(
-            and_(
-                MemoryEntry.id.in_(memory_ids),
-                MemoryEntry.user_id == query.user_id
+        memories = (
+            self.db.query(MemoryEntry)
+            .filter(
+                and_(
+                    MemoryEntry.id.in_(memory_ids), MemoryEntry.user_id == query.user_id
+                )
             )
-        ).all()
+            .all()
+        )
 
         # Sort memories by relevance score
         memories.sort(key=lambda x: x.relevance_score or 0, reverse=True)
@@ -85,12 +94,16 @@ class MemoryService:
 
     async def cleanup_expired_memories(self) -> int:
         """Clean up expired short-term memories"""
-        expired_memories = self.db.query(MemoryEntry).filter(
-            and_(
-                MemoryEntry.expires_at.isnot(None),
-                MemoryEntry.expires_at < datetime.utcnow()
+        expired_memories = (
+            self.db.query(MemoryEntry)
+            .filter(
+                and_(
+                    MemoryEntry.expires_at.isnot(None),
+                    MemoryEntry.expires_at < datetime.utcnow(),
+                )
             )
-        ).all()
+            .all()
+        )
 
         for memory in expired_memories:
             await self.delete_memory(memory.id)
@@ -107,18 +120,17 @@ class MemoryService:
                 "user_id": memory.user_id,
                 "created_at": memory.created_at.isoformat(),
                 "relevance_score": memory.relevance_score,
-                **(memory.meta or {})
-            }
+                **(memory.meta or {}),
+            },
         )
 
         # Add to Zep collection
         await self.zep_env.memory.add(
-            collection_name=f"user_{memory.user_id}",
-            memory=zep_memory
+            collection_name=f"user_{memory.user_id}", memory=zep_memory
         )
 
         # Store embedding in database if available
-        if hasattr(zep_memory, 'embedding') and zep_memory.embedding is not None:
+        if hasattr(zep_memory, "embedding") and zep_memory.embedding is not None:
             memory.embedding = base64.b64encode(zep_memory.embedding.tobytes()).decode()
             self.db.commit()
 
@@ -130,13 +142,13 @@ class MemoryService:
     async def _delete_from_zep(self, memory: MemoryEntry) -> None:
         """Delete memory from Zep vector store"""
         await self.zep_env.memory.delete(
-            collection_name=f"user_{memory.user_id}",
-            memory_id=str(memory.id)
+            collection_name=f"user_{memory.user_id}", memory_id=str(memory.id)
         )
+
 
 class TokenOptimizer:
     """Handles token optimization for memory content"""
-    
+
     def __init__(self):
         self.target_reduction = 0.7  # Target 70% token reduction
 
@@ -152,4 +164,4 @@ class TokenOptimizer:
     def calculate_token_reduction(self, original: str, optimized: str) -> float:
         """Calculate the percentage of token reduction"""
         # TODO: Implement token counting and reduction calculation
-        return 0.0 
+        return 0.0

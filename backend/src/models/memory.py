@@ -1,9 +1,13 @@
 from datetime import datetime
 from typing import Optional
-from sqlalchemy import Column, Integer, String, DateTime, Float, ForeignKey, JSON
-# from sqlalchemy.orm import relationship
+
+from sqlalchemy import JSON, Column, DateTime, Float, ForeignKey, Integer, String
 
 from src.core.database import Base
+
+# from sqlalchemy.orm import relationship
+
+
 
 class MemoryEntry(Base):
     __tablename__ = "memory_entries"
@@ -22,4 +26,4 @@ class MemoryEntry(Base):
     # user = relationship("User", back_populates="memories")
 
     def __repr__(self):
-        return f"<MemoryEntry(id={self.id}, user_id={self.user_id}, created_at={self.created_at})>" 
+        return f"<MemoryEntry(id={self.id}, user_id={self.user_id}, created_at={self.created_at})>"
