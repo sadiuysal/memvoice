@@ -41,7 +41,7 @@ services:
       dockerfile: Dockerfile.dev
     container_name: memvoice-backend
     environment:
-      - DATABASE_URL=postgresql://memvoice_user:memvoice_password@postgres:5432/memvoice
+      - DATABASE_URL=postgresql+asyncpg://memvoice_user:memvoice_password@postgres:5432/memvoice
       - REDIS_URL=redis://redis:6379
       - ENVIRONMENT=development
     env_file:
