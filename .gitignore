@@ -80,6 +80,10 @@ coverage/
 *.swp
 *.swo
 *~
+.cursor/rules/
+.github/issues/
+
+
 
 # Temporary files
 *.tmp
